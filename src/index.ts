@@ -1,8 +1,10 @@
 import { CustomError } from '@n0bodysec/ts-utils';
 import { readFile } from 'fs/promises';
+import { AmmunationClassTransform } from './transforms/AmmunationClass';
 import { RecipeTransform } from './transforms/Recipe';
+import type { AmmunationClass } from './types/AmmunationClass';
 import type { IRecipe } from './types/Recipes';
-import { getAllFiles } from './utils/functions';
+import { getAllJsonFiles } from './utils/functions';
 import './utils/setup';
 
 // eslint-disable-next-line @typescript-eslint/no-floating-promises
@@ -18,7 +20,7 @@ import './utils/setup';
 	// Transform Recipes
 	if (type === 'Recipes')
 	{
-		const files = await getAllFiles(dir);
+		const files = (await getAllJsonFiles(dir)).filter((x) => x.startsWith('Cook_'));
 		const filesData = await Promise.all(files.map((file) => readFile(file, 'utf-8')));
 
 		const transformer = new RecipeTransform();
@@ -28,6 +30,25 @@ import './utils/setup';
 			// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
 			const parsed = transformer.transform(JSON.parse(f)[0] as IRecipe);
 			await transformer.save(parsed, (parsed.Name ?? 'undefined') + '.json');
+		}));
+	}
+
+	// Transform Ammunation Class
+	else if (type === 'AmmClass')
+	{
+		const files = await getAllJsonFiles(dir);
+		const filesData = await Promise.all(files.map((file) => readFile(file, 'utf-8')));
+
+		const transformer = new AmmunationClassTransform();
+
+		await Promise.all(filesData.map(async (f) =>
+		{
+			const json = (JSON.parse(f) as AmmunationClass[]).find((x) => (x.Type?.startsWith('BP_') || x.Type?.startsWith('BPC_')));
+			if (json !== undefined)
+			{
+				const parsed = transformer.transform(json);
+				await transformer.save(parsed, (parsed.Name?.replace('Default__', '') ?? 'undefined') + '.json', 4);
+			}
 		}));
 	}
 

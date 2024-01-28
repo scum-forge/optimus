@@ -16,3 +16,22 @@ export async function getAllFiles(dir: string): Promise<string[]>
 
 	return files.flat();
 }
+
+export async function getAllJsonFiles(dir: string): Promise<string[]>
+{
+	const subdirs = await readdir(dir);
+	const files = await Promise.all(
+		subdirs.map(async (subdir) =>
+		{
+			const res = join(dir, subdir);
+			const fileStat = await stat(res);
+
+			if (fileStat.isDirectory()) return getAllJsonFiles(res);
+			if (fileStat.isFile() && subdir.endsWith('.json')) return res;
+
+			return [];
+		}),
+	);
+
+	return files.flat();
+}
