@@ -47,7 +47,7 @@ import './utils/setup';
 			if (json !== undefined)
 			{
 				const parsed = transformer.transform(json);
-				await transformer.save(parsed, (parsed.Name?.replace('Default__', '') ?? 'undefined') + '.json', 4);
+				await transformer.save(parsed, (parsed.Name?.replace('Default__', '') ?? 'undefined') + '.json');
 			}
 		}));
 	}

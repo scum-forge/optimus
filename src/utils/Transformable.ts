@@ -1,4 +1,4 @@
-import { writeFile } from 'node:fs/promises';
+import { mkdir, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
 type T = Record<string, unknown>;
@@ -16,7 +16,7 @@ export abstract class Transformable<TData, TReturn extends T | T[]>
 
 	async save(transformedData: TReturn, outName: string, space?: string | number | undefined)
 	{
-		// TODO: create outDir if not exists
+		await mkdir(this.outDir, { recursive: true });
 		return writeFile(join(this.outDir, outName), JSON.stringify(transformedData, null, space), 'utf-8');
 	}
 }
